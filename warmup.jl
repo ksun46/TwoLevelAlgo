@@ -12,17 +12,27 @@ using Plots
 using TensorToolbox
 using Dates
 using MathOptInterface
+using MathProgBase
 ## if a customized version of Ipopt is already installed, then directly "using Ipopt"
 ## otherwise run '''Pkg.add("Ipopt")''', where default linear solver MUMPS will be used
 using Ipopt
 
 ## test IPOPT
 println("Test IPOPT in manager process...")
-m_test = Model(with_optimizer(Ipopt.Optimizer, linear_solver = "ma57"))
-@variable(m_test, x[i in 1:10], lower_bound = 0.0, upper_bound = 1.0)
+
+## JuMP 0.20
+# m_test = Model(with_optimizer(Ipopt.Optimizer, linear_solver = "ma57"))
+# @variable(m_test, x[i in 1:10], lower_bound = 0.0, upper_bound = 1.0)
+# @constraint(m_test, sum(x) == 1.0)
+# @objective(m_test, Min, sum(i * x[i] for i in 1:10))
+# JuMP.optimize!(m_test)
+# @assert(JuMP.termination_status(m_test)== MOI.LOCALLY_SOLVED, "Ipopt test failed. Double check solver set-up.")
+
+## JuMP v0.18
+m_test = Model(solver=IpoptSolver())
+@variable(m_test, x[i in 1:10], lowerbound = 0.0, upperbound = 1.0)
 @constraint(m_test, sum(x) == 1.0)
 @objective(m_test, Min, sum(i * x[i] for i in 1:10))
-JuMP.optimize!(m_test)
-@assert(JuMP.termination_status(m_test)== MOI.LOCALLY_SOLVED, "Ipopt test failed. Double check solver set-up.")
+solve(m_test)
 println("Ipopt works fine.")
 println("Project warm-up finished ($(time() - time_start)).")

@@ -3,7 +3,7 @@ using Distributed
 time_compilation_start = time()
 println("Start compilation...")
 Max_threads = Sys.CPU_THREADS
-println("  Max number of threads is $Max_threads, 75% of which will be used.")
+println("  Max number of threads is $Max_threads, 4 of which will be used.")
 available_threads = 4 #trunc(Int, Sys.CPU_THREADS*0.75)
 if Distributed.nprocs() < available_threads
     println("  Add worker processes ...")
@@ -36,6 +36,35 @@ function ParallelManifold(np::Int64, bool_dual_update::Bool)
     end
     println("Start algorithm initialization...")
     time_init_start = time()
+
+    ## create and send model to worker thread
+    println("  Send subproblem models to worker processes ...")
+    global m
+    for k in 1:3
+        println("    Construct subproblem model $k in the manager process...")
+        m = SubproblemConstructor_v018(k, np)
+        ## for JuMP 0.20
+        # m = SubproblemConstructor(k, np)
+        worker_id = MapZoneToWorker[k]
+        println("    Send zone $k subproblem model to worker $worker_id...")
+        remotecall_fetch(()->m, worker_id)
+    end
+    ## Presolve to warmup IPOPT in each worker process
+    println("  Presolve to warm-up IPOPT in each worker process ...")
+    @sync for k in 1:3
+        @async begin
+            worker_id = MapZoneToWorker[k]
+            remotecall_fetch(PreSolve_v018, worker_id)
+            # for JuMP 0.20
+            # remotecall_fetch(PreSolve, worker_id)
+        end
+    end
+
+    ## create necessary data structures
+    Dict_total_idx = GenerateTotalIdx(3, np)
+    (lmd, y, z, global_copy, blockSol, location) = initialization(np, Dict_total_idx)
+    println("Algorithm initialization finished ($(time() - time_init_start)).")
+
     ## some algorithmic parameters
     maxIter = 500
     theta = 0.5 ## residual decrease factor
@@ -48,57 +77,28 @@ function ParallelManifold(np::Int64, bool_dual_update::Bool)
     else
         beta = 500.0
     end
-    rho = 2.0 * beta  ## inner ADMM penalty
-    lmd_bd = 1.0e6    ## bound on outer dual
+    rho = 2.0 * beta     ## inner ADMM penalty
+    lmd_bd = 1.0e6       ## bound on outer dual
     iterCount = 1
     almCount = 1
-    zList = [0.0]
-    ## create and send model to worker thread
-    println("  Send subproblem models to worker processes ...")
-    global m
-    for k in 1:3
-        println("    Construct subproblem model $k in the manager process...")
-        m = SubproblemConstructor(k, np)
-        worker_id = MapZoneToWorker[k]
-        print("    Send zone $k subproblem model to worker $worker_id...")
-        remotecall_fetch(()->m, worker_id)
-    end
-    ## Presolve to warmup IPOPT in each worker process
-    println("  Presolve to warm-up IPOPT in each worker process ...")
-    @sync for k in 1:3
-        @async begin
-            worker_id = MapZoneToWorker[k]
-            remotecall_fetch(PreSolve, worker_id)
-        end
-    end
-    # subSystems = Dict()
-    # for k in 1:3
-    # subSystems[k] = SubproblemConstructor(k, np)
-    # end
-
-    ## create necessary data structure
-    Dict_total_idx = GenerateTotalIdx(3, np)
-    (lmd, y, z, global_copy, blockSol, location) = initialization(np, Dict_total_idx)
-    println("Algorithm initialization finished ($(time() - time_init_start)).")
-    time_loop_start = time()
     slack_z_prev = 0.0
     obj_cost = 0.0
     res = 0.0
-
-    @time while iterCount <= maxIter
+    time_loop_start = time()
+    while iterCount <= maxIter
         println("Iteration: ", iterCount)
-        obj_cost = 0.0
+        objDict = [0.0;0.0;0.0]
         ## update the first block in parallel
         @sync for k in 1:3
             @async begin
-                (obj, solDict)=remotecall_fetch(SolveSubproblem, MapZoneToWorker[k],
+                (objDict[k], blockSol[k])=remotecall_fetch(SolveSubproblem_v018, MapZoneToWorker[k],
                     k, Dict_total_idx[k], global_copy, z[k], y[k], rho)
-                # (obj, solDict) = @fetch SolveSubproblem2(subSystems[k],
-                #       k, Dict_total_idx[k], global_copy, z[k], y[k], rho)
-                obj_cost += obj
-                blockSol[k] = solDict
+                ## For JuMP 0.20
+                # (objDict[k], blockSol[k])=remotecall_fetch(SolveSubproblem, MapZoneToWorker[k],
+                #     k, Dict_total_idx[k], global_copy, z[k], y[k], rho)
             end
         end
+        obj_cost = sum(objDict)
         ## update the second block
         for i in 1:np
         global_copy[i] = (rho*(sum(blockSol[k][i]+z[k][i] for k in location[i])) +
@@ -170,9 +170,6 @@ function ParallelManifold(np::Int64, bool_dual_update::Bool)
                    "Outer"=>almCount, "Res"=>res)
     return solDict
 end
-
-solDict = ParallelManifold(60, true)
-
 
 
 # ## run test
