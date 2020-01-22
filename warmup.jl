@@ -12,11 +12,14 @@ using TensorToolbox
 using Dates
 using MathOptInterface
 using MathProgBase
+using DataFrames
+using ExcelReaders
+using CSV
+
 ## if a customized version of Ipopt with MA57 is already installed, then directly "using Ipopt";
 ## otherwise run '''Pkg.add("Ipopt")''', where default linear solver MUMPS will be used,
 ## and perforamnce may be comproised
 using Ipopt
-
 ## test IPOPT
 println("Test IPOPT in manager process...")
 
