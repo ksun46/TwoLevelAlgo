@@ -1,8 +1,7 @@
 ## Robust tensor PCA problem with l_1 norm regularization
 ## ADMM-g and Two-level Algorithm
-## Kaizhao Sun
-## 10/03/2019
-using TensorToolbox, Plots
+
+include("../warmup.jl")
 import LinearAlgebra:norm
 
 ## Generate data with R = Rcp + ceil(0.2*Rcp)
@@ -77,7 +76,7 @@ function ADMM_g(A, B, C, E1, Z,Z1, BB1, T1, Y1, R)
     Y1 = deepcopy(Y1)
 
     ## Parameters for ADMM-g according to Jiang et al. 2019
-    rho = 4             ## ADMM penalty
+    rho = 4.0             ## ADMM penalty
     stepSize = 1/rho    ## Last block stpe size
     m = rho/3           ## proximal coefficient
     iterCount = 1
@@ -111,65 +110,6 @@ function ADMM_g(A, B, C, E1, Z,Z1, BB1, T1, Y1, R)
         iterCount += 1
     end
     return Z1, reList, errList
-end
-
-## Two-level Algorithm with ADMM in the inner level
-function Two_Level(A, B, C, E1, Z, Z1, BB1, T1, Y1, R)
-    global I1, I2, I3, alpha, alphaN, res_tol
-    A = deepcopy(A)
-    B = deepcopy(B)
-    C = deepcopy(C)
-    Z_Start = deepcopy(Z1)
-    E1 = deepcopy(E1)
-    Z1 = deepcopy(Z1)
-    BB1 =deepcopy(BB1)
-    T1 = deepcopy(T1)
-    Y1 = deepcopy(Y1)
-    ## Parameters for ADMM-g
-    beta = 2
-    rho = 4
-    stepSize = 1/rho
-    m = 0.5 * rho
-    maxIter = 2000
-    iterCount = 1
-    almCount = 1
-    ## Outer level parameters
-    Lmd1 = Y1*0.0
-    S1 = Y1*0.0
-    reList = Float64[]
-    while iterCount <= maxIter
-        A = (tenmat(Z,1)*KR(C,B)+0.5*m*A) * inv((C'*C).*(B'*B)+0.5*m*eye(R))
-        B = (tenmat(Z,2)*KR(C,A)+0.5*m*B) * inv((C'*C).*(A'*A)+0.5*m*eye(R))
-        C = (tenmat(Z,3)*KR(B,A)+0.5*m*C) * inv((B'*B).*(A'*A)+0.5*m*eye(R))
-        E1 = SoftShrinkage((rho/(rho+m))*(T1+(1/rho)*Y1-BB1-Z1-S1)+ m/(rho+m)*E1, alpha/(rho+m))
-        Z1 = (1/(2+2*m+rho)) * (2*A*(KR(C,B))' + 2*m*Z1 + Y1-rho*(E1+BB1+S1-T1))
-        # BB1 = BB1 - stepSize*(2*alphaN*BB1-Y1+rho*(E1+Z1+BB1+S1-T1))
-        BB1 = (Y1-rho*(Z1+E1+S1-T1))/(rho+2*alphaN)
-        S1 = (-Lmd1+Y1-rho*(Z1+E1+BB1-T1))/(beta+rho)
-        Y1 = Y1 - rho*(Z1+E1+BB1+S1-T1)
-
-        re3 = norm(E1+Z1+BB1+S1-T1)
-        re2 = norm(E1+Z1+BB1-T1)
-        error = norm(Z1-Z_Start)/norm(Z_Start)
-        push!(reList, re2)
-        println("Iteration $iterCount: current inner residual is $re3; error is $error")
-        if re3 <= max(1e-2/almCount, res_tol)
-            println("Inner ADMM_G terminate successfully!")
-            if re2 <= res_tol
-                println("Outer ADMM terminates successfully at iteration $almCount")
-                break
-            end
-            Lmd1 = Lmd1 + beta * S1
-            rho = rho * 1.5
-            beta = 2 * beta
-            almCount += 1
-        end
-        iterCount += 1
-    end
-    println("Total number of inner iterations: $iterCount")
-    println("Total number of outer iterations: $almCount")
-    println("      Penalty rho at termination: $rho")
-    return Z1, reList
 end
 
 ## Two-level Algorithm with ADMM-g in the inner level
@@ -295,8 +235,6 @@ for Rcp in RcpList
     plot!(reList2_log, label = "Two-level")
     push!(plotList, p)
 end
-solDict
-plotList
 p1 = plotList[1]
 p2 = plotList[2]
 p3 = plotList[3]
@@ -333,69 +271,3 @@ e_combine = plot(e1, e2, e3, e4, layout = (2,2))
 plot!(legendfont=Plots.font(5))
 plot!(legend=:best)
 savefig(e_combine, "combined_pca_err.pdf")
-
-
-# ## Main part for generating plits
-# plotList = []
-# errorList = []
-# for Rcp in [5, 8, 10, 20,30,40]
-#     Z, E, BB, T, T1, R, A, B, C, Z1,E1,BB1, Y1 = GenerateData(Rcp)
-#     Z_one, reList1 = ADMM_g(A, B, C, E1, Z,Z1, BB1, T1, Y1, R)
-#     Z_two, reList2 = Two_Level_g(A, B, C, E1, Z,Z1, BB1, T1, Y1, R)
-#     error1 =norm(Z_one-Z1)/norm(Z1)
-#     error2 =norm(Z_two-Z1)/norm(Z1)
-#
-#     push!(errorList, (error1, error2))
-#
-#     reList1_log = Float64[log(reList1[i]) for i in 1:length(reList1)]
-#     reList2_log =  Float64[log(reList2[i]) for i in 1:length(reList2)]
-#
-#     p = plot(reList1_log, label = "ADMM-g", xlabel = "Iteration (CP Rank=$Rcp)")
-#     plot!(reList2_log, label = "Two-level")
-#     # p = plot(reList1_log, xlabel = "Iteration (CP Rank=$Rcp)")
-#     # plot!(reList2_log)
-#     push!(plotList, p)
-# end
-#
-# p1 = plotList[1]
-# p2 = plotList[2]
-# p3 = plotList[3]
-# p4 = plotList[4]
-# p5 = plotList[5]
-# p6 = plotList[6]
-# p_combine = plot(p2, p3, p4, p6, layout = (2,2))
-# plot!(legendfont=Plots.font(6))
-# plot!(legend=:best)
-# plot!(ytickfont=Plots.font(1))
-# ylabel!(L"\log \small{\|Z+E+B-T\|_F}")
-# png("combined_pca")
-#
-# for (error1, error2) in errorList
-#     println("ADMM_g error is: $error1")
-#     println("Two-level error is: $error2")
-#     println("")
-# end
-
-
-
-
-
-# Z_one, reList1 = ADMM_g(A, B, C, E1, Z1, BB1, T1, Y1)
-# Z_two, reList2 = Two_Level(A, B, C, E1, Z1, BB1, T1, Y1)
-
-# error_one = norm(Z_one-Z1)/norm(Z1)
-# residual_one = reList1[end]
-# error_two = norm(Z_two-Z1)/norm(Z1)
-# residual_two = reList2[end]
-
-# println("ADMM-g achieves residual: $residual_one; residual: $error_one")
-# println("Two-Level achieves error: $residual_two; residual: $error_two")
-
-# reList1_log = Float64[log(reList1[i]) for i in 1:length(reList1)]
-# reList2_log =  Float64[log(reList2[i]) for i in 1:length(reList2)]
-#
-#
-# plot(reList1_log,label = "ADMM-g", xlabel = "Rcp = $Rcp")
-# plot!(reList2_log,label = "Two-level")
-# ylabel!(L"\log(\|Z+E+B-T\|_F)")
-# png("Re_$(I1)_$(I2)_$(I3)_rcp$(Rcp)")
