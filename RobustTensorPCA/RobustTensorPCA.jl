@@ -1,7 +1,9 @@
 ## Robust tensor PCA problem with l_1 norm regularization
 ## ADMM-g and Two-level Algorithm
-
-include("../warmup.jl")
+using Pkg
+Pkg.activate(".")
+Pkg.instantiate()
+using Plots, TensorToolbox, Dates
 import LinearAlgebra:norm
 
 ## Generate data with R = Rcp + ceil(0.2*Rcp)

@@ -1,20 +1,20 @@
 ## This is the warm-up file
 println("Start project warm up")
-time_start = time()
 using Pkg
 Pkg.activate(".")
 Pkg.instantiate()
 Pkg.status()
 
 using Distributed
-using JuMP
+using JuMP      ## An earlier version JuMP v0.18 should be used for this project
 using Plots
 using TensorToolbox
 using Dates
 using MathOptInterface
 using MathProgBase
-## if a customized version of Ipopt is already installed, then directly "using Ipopt"
-## otherwise run '''Pkg.add("Ipopt")''', where default linear solver MUMPS will be used
+## if a customized version of Ipopt with MA57 is already installed, then directly "using Ipopt";
+## otherwise run '''Pkg.add("Ipopt")''', where default linear solver MUMPS will be used,
+## and perforamnce may be comproised
 using Ipopt
 
 ## test IPOPT
@@ -27,12 +27,11 @@ println("Test IPOPT in manager process...")
 # @objective(m_test, Min, sum(i * x[i] for i in 1:10))
 # JuMP.optimize!(m_test)
 # @assert(JuMP.termination_status(m_test)== MOI.LOCALLY_SOLVED, "Ipopt test failed. Double check solver set-up.")
+# println("Ipopt works fine.")
 
 ## JuMP v0.18
-m_test = Model(solver=IpoptSolver())
+m_test = Model(solver=IpoptSolver(linear_solver="MA57"))
 @variable(m_test, x[i in 1:10], lowerbound = 0.0, upperbound = 1.0)
 @constraint(m_test, sum(x) == 1.0)
 @objective(m_test, Min, sum(i * x[i] for i in 1:10))
 solve(m_test)
-println("Ipopt works fine.")
-println("Project warm-up finished ($(time() - time_start)).")

@@ -17,7 +17,8 @@ MapZoneToWorker = Dict(k=>workersID[k] for k in 1:available_threads-1)
 
 @everywhere using Pkg
 @everywhere Pkg.activate(".")
-@everywhere using JuMP, Ipopt, MathOptInterface
+@everywhere using JuMP, Ipopt
+@everywhere using MathOptInterface
 include("LibManifold.jl")
 import LinearAlgebra:norm
 println("Compilation finished ($(time() - time_compilation_start)).")
@@ -173,19 +174,19 @@ end
 
 
 # ## run test
-# np_list = [60, 90, 120, 180, 240, 300]
-# solDict = Dict()
-# for np in np_list
-#     tempDict=Dict()
-#     m_central= CentralizedSovler(np)
-#     start = time()
-#     optimize!(m)
-#     time_central = time()-start
-#     solDict_alm = ParallelManifold(np, true)
-#     solDict_penalty = ParallelManifold(np, false)
-#     tempDict["central"] = Dict("time"=>time_central, "obj"=>JuMP.objective_value(m_central))
-#     tempDict["ALM"] = solDict_alm
-#     tempDict["Penalty"] = solDict_penalty
-#     solDict[np] = tempDict
-# end
+np_list = [60, 90, 120, 180, 240, 300]
+solDict = Dict()
+for np in np_list
+    tempDict=Dict()
+    m_central= CentralizedSovlerz_v018(np)
+    start = time()
+    solve(m_central)
+    time_central = time()-start
+    tempDict["central"] = Dict("time"=>time_central, "obj"=>getobjectivevalue(m_central))
+    solDict_alm = ParallelManifold(np, true)
+    solDict_penalty = ParallelManifold(np, false)
+    tempDict["ALM"] = solDict_alm
+    tempDict["Penalty"] = solDict_penalty
+    solDict[np] = tempDict
+end
 ## output results
