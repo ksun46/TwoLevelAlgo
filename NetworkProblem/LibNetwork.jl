@@ -2,8 +2,8 @@ using Distributed
 using DataFrames, ExcelReaders, CSV
 using Ipopt, JuMP
 const mBase = 100.0
-
-## Parser helper functions
+import LinearAlgebra:norm
+## Parser
 function GenerateLineDict(fromBus, toBus, flow_max)
     Dict_Line = Dict()
     for i in 1:length(fromBus)
@@ -281,6 +281,33 @@ function CentralizedNetworkSolver_SOCP(case)
     return m
 end
 
+## Initialization
+function Initialization(partition, Dict_Location_Line, Dict_Location)
+    num_partition = length(keys(partition))
+    Dual_lmd = Dict(k=>Dict() for k in 1:num_partition)
+    Dual_y   = Dict(k=>Dict() for k in 1:num_partition)
+    Slack_z  = Dict(k=>Dict() for k in 1:num_partition)
+    BlockSol = Dict(k=>Dict() for k in 1:num_partition)
+    for k in 1:num_partition
+        CopiedBus = union(partition[k]["OtherBus"], partition[k]["BdBus"])
+        OtherLine = partition[k]["OtherLine"]
+        Dual_lmd[k]["Line"] = Dict(l=>[0.0, 0.0] for l in OtherLine)
+        Dual_y[k]["Line"]   = Dict(l=>[0.0, 0.0] for l in OtherLine)
+        Slack_z[k]["Line"]  = Dict(l=>[0.0, 0.0] for l in OtherLine)
+        BlockSol[k]["Line"] = Dict(l=>[1.0, 0.0] for l in OtherLine)
+
+        Dual_lmd[k]["Bus"] = Dict(i=>0.0 for i in CopiedBus)
+        Dual_y[k]["Bus"]   = Dict(i=>0.0 for i in CopiedBus)
+        Slack_z[k]["Bus"]  = Dict(i=>0.0 for i in CopiedBus)
+        BlockSol[k]["Bus"] = Dict(i=>1.0 for i in CopiedBus)
+    end
+    Global_copy = Dict("Line"=>Dict(l=>[0.0, 0.0] for l in keys(Dict_Location_Line),
+                       "Bus"=>Dict(i=>1.0 for i in keys(Dict_Location))
+
+    return Dual_lmd, Dual_y, Slack_z, BlockSol, Global_copy
+end
+
+
 ## Construct Subproblem
 @everywhere function NetworkSubproblemConstructor(partition_k::Dict, data_network::Dict, Dict_Nbr::Dict)
     m = Model(solver = IpoptSolver(solver=IpoptSolver(linear_solver="MA57")))
@@ -339,6 +366,119 @@ end
 end
 
 
+
+## subproblem solvers
+@everywhere function PreSolve_Network()
+    global m
+    solve(m)
+    return 0.0
+end
+@everywhere function SolveSubproblem_TL(partition_k, Global_copy, y_k, z_k, rho)
+    global m
+    aug_obj = m[:cost]
+    for l in partition_k["OtherLine"]
+        temp = temp =[m[:ce][l], m[:se][l]]-global_copy["Line"][l]+ z_k["Line"][l]
+        aug_obj += y_k["Line"][l]'*temp + 0.5 * rho * temp'*temp
+    end
+    for i in union(partition_k["BdBus"], partition_k["OtherBus"])
+        temp = m[:c][i] - Global_copy["Bus"][i] + z_k["Bus"][i]
+        aug_obj += y_k["Bus"][i] * temp + 0.5 * rho * temp'*temp
+    end
+    @objective(m, Min, aug_obj)
+    status = solve(m)
+    gen_coxt = getvalue(m[:cost])
+    BlockSol_k = Dict(
+        "Line"=>Dict(l=>[getvalue(m[:ce][l]), getvalue(m[:se][l])] for l in partition_k["OtherLine"]),
+        "Bus"=>Dict(I=>getvalue(m[:c][i]) for i in union(partition_k["BdBus"], partition_k["OtherBus"])))
+    return BlockSol_k, gen_cost
+end
+
+
+## Second block
+function UpdateSecondBlock!(Global_copy, BlockSol, Slack_z, Dict_Location_Dict, Dict_Location, rho)
+    for l in keys(Dict_Location_Dict)
+        Global_copy["Line"][l] = sum(BlockSol[k]["Line"][l] + Slack_z[k]["Line"][l]
+            for k in Dict_Location_Dict[l])/2 +
+            sum(Dual_y[k]["Line"][l] for k in Dict_Location_Dict[l])/(2*rho)
+    end
+    for i in keys(Dict_Location)
+        num_k = length(Dict_Location)
+        Global_copy["Bus"][i] = sum(BlockSol[k]["Bus"][l] + Slack_z[k]["Bus"][i]
+            for k in Dict_Location[i])/num_k +
+            sum(Dual_y[k]["Bus"] for k in Dict_Location[i])/(num_l * rho)
+    end
+end
+
+## Third block
+function UpdateThirdBlock!(Slack_z, BlockSol, Global_copy, Dual_y, Dual_lmd, rho, beta)
+    num_partition = length(keys(BlockSol))
+    for k in 1:num_partition
+        for i in keys(Slack_z[k]["Bus"])
+            Slack_z[k]["Bus"][i] = (rho*(Global_copy["Bus"][i] - BlockSol[k]["Bus"][i])-
+                Dual_lmd[k]["Bus"][i]-Dual_y[k]["Bus"][i])/(beta+rho)
+        end
+        for l in keys(Slack_z["Line"])
+            Slack_z[k]["Line"][l] =(rho*(Global_copy["Line"][i] - BlockSol[k]["Line"][i])-
+                Dual_lmd[k]["Line"][i]-Dual_y[k]["Line"][i])/(beta+rho)
+        end
+    end
+end
+## Inner dual
+function UpdateDual_y!(Dual_y, BlockSol, Global_copy,Slack_z, rho)
+    num_partition = length(keys(BlockSol))
+    re3_list = []
+    re2_list = []
+    z_list = []
+    for k in 1:num_partition
+        for i in keys(Slack_z[k]["Bus"])
+            re3_temp = BlockSol[k]["Bus"][i]-Global_copy["Bus"][i] + Slack_z[k]["Bus"][i]
+            re2_temp = BlockSol[k]["Bus"][i]-Global_copy["Bus"][i]
+            Dual_y[k]["Bus"][i] =Dual_y[k]["Bus"][i]+rho*re3_temp
+            push!(re3_list, re3_temp'*re3_temp)
+            push!(re2_list, re2_temp'*re2_temp)
+            push!(z_list, Slack_z[k]["Bus"][i]'*Slack_z[k]["Bus"][i])
+        end
+        for l in keys(Slack_z["Line"])
+            re3_temp = BlockSol[k]["Line"][l]-Global_copy["Line"][l] + Slack_z[k]["Line"][l]
+            re2_temp = BlockSol[k]["Line"][l]-Global_copy["Line"][l]
+            Dual_y[k]["Line"][l] =Dual_y[k]["Line"][l]+rho*re3_temp
+            push!(re3_list, re3_temp'*re3_temp)
+            push!(re2_list, re2_temp'*re2_temp)
+            push!(z_list, Slack_z[k]["Line"][l]'*Slack_z[k]["Line"][l])
+        end
+    end
+    re3 = sqrt(sum(re3_list))
+    re2 = sqrt(sum(re2_list))
+    rez = sqrt(sum(z_list))
+    return re2, re3, rez
+end
+## Outer dual
+function UpdateOuterDual!(Dual_lmd, Slack_z, beta, lmd_bd)
+    num_partition = length(keys(Dual_lmd))
+    for k in 1:num_partition
+        for l in keys(Dual_lmd[k]["Line"])
+            temp = Dual_lmd[k]["Line"][l]+beat*Slack_z[k]["Line"][l]
+            Dual_lmd[k]["Line"][l] = min.(max.(temp, -lmd_bd), lmd_bd)
+        end
+        for i in keys(Dual_lmd[k]["Bus"])
+            temp = Dual_lmd[k]["Bus"][i]+beat*Slack_z[k]["Bus"][i]
+            Dual_lmd[k]["Bus"][i] = min.(max.(temp, -lmd_bd), lmd_bd)
+        end
+    end
+end
+
+function InitializeInner!(Dual_y, Dual_lmd, Slack_z)
+    for k in 1:num_partition
+        for l in Slack_z[k]["Line"]
+            Slack_z[k]["Line"][l] = [0.0, 0.0]
+            Dual_y[k]["Line"][l] = -Dual_lmd[k]["Line"][l]
+        end
+        for i in Slack_z[k]["Bus"]
+            Slack_z[k]["Bus"][i] = 0.0
+            Dual_y[k]["Bus"][i] = -Dual_y[k]["Bus"][i]
+        end
+    end
+end
 case="case14"
 num_partition = 2
 data_network, Network = parser(case, num_partition)

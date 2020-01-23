@@ -18,7 +18,7 @@ MapZoneToWorker = Dict(k=>workersID[k] for k in 1:available_threads-1)
 @everywhere using Pkg
 @everywhere Pkg.activate(".")
 @everywhere using JuMP, Ipopt
-@everywhere using MathOptInterface
+# @everywhere using MathOptInterface
 include("LibManifold.jl")
 import LinearAlgebra:norm
 println("Compilation finished ($(time() - time_compilation_start)).")
