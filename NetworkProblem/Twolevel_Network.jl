@@ -38,7 +38,7 @@ function Twolevel_Network(case, num_partition)
     end
     ## Presolve to warmup IPOPT in each worker process
     println("  Presolve to warm-up IPOPT in each worker process ...")
-    @sync for k in 1:3
+    @sync for k in 1:num_partition
         @async begin
             worker_id = MapZoneToWorker[k]
             remotecall_fetch(PreSolve_Network, worker_id)
@@ -48,7 +48,7 @@ function Twolevel_Network(case, num_partition)
     println("Algorithm initialization finished ($(time() - time_init_start)).")
     iterCount = 1
     almCount = 1
-    rho = 500
+    rho = 1000
     beta = 2*rho
     theta = 0.75
     gamma = 1.5
@@ -61,16 +61,16 @@ function Twolevel_Network(case, num_partition)
     dim_couple = sum(length(Dict_Location[i]) for i in keys(Dict_Location)) +
         2 * length(keys(Dict_Location_Line))
     while iterCount <= MaxIter
-        obj_list = [0.0 for k in 1:num_partiton]
+        obj_list = [0.0 for k in 1:num_partition]
         @sync for k in 1:num_partition
             @async begin
-                BlockSol[k], obj_list[k] = remotecall_fetch(SolveSubproblem_TL(partition_k,
-                    MapZoneToWorker[k], Global_copy, Dual_y[k], Slack_z[k], rho))
+                BlockSol[k], obj_list[k] = remotecall_fetch(SolveSubproblem_TL,
+                    MapZoneToWorker[k], partition[k], Global_copy, Dual_y[k], Slack_z[k], rho)
             end
         end
         gen_cost = sum(obj_list)
         ## second block update
-        UpdateSecondBlock!(Global_copy, BlockSol, Slack_z, Dict_Location_Line, Dict_Location, rho)
+        UpdateSecondBlock!(Global_copy, BlockSol, Slack_z, Dual_y, Dict_Location_Line, Dict_Location, rho)
         ## thrid block update
         UpdateThirdBlock!(Slack_z, BlockSol, Global_copy, Dual_y, Dual_lmd, rho, beta)
         ## dual update
@@ -83,17 +83,18 @@ function Twolevel_Network(case, num_partition)
         if re3 <= max(1.0e-5, sqrt(dim_couple)/(rho * almCount))
             println("   ADMM terminates at iteration: ", iterCount)
             println("   ALM iteration $almCount finished")
+            println("   Current beta is $beta")
             println("")
             ## check outer stop criteria
-            if norm(re2_list) <= 1e-6 * sqrt(3 * np)
+            if re2 <= 1e-6 * sqrt(dim_couple)
                 println("Converged successfully. ALM Stopping Criteria Met at Iteration $almCount")
-                res = norm(re2_list)
+                res = re2
                 break
             end
             ## update outer dual
             UpdateOuterDual!(Dual_lmd, Slack_z, beta, lmd_bd)
             ## update penalty
-            if (rez > theta) * rez_prev && beta*gamma <= 1e12
+            if (rez > theta * rez_prev) && (beta*gamma <= 1e12)
                 beta = beta * gamma
                 rho = 2*beta
             end
@@ -109,7 +110,12 @@ function Twolevel_Network(case, num_partition)
     println("")
     println("Number of inner ADMM iterations: $iterCount")
     println("Number of outer ALM  iterations: $almCount")
-    println("Objevtive value at termination: $obj_cost")
+    println("Objevtive value at termination: $gen_cost")
     println("    Penalty_beta at termination: $beta")
     println("The Two-level Algorithm finished in $duration seconds.")
 end
+
+
+case="case14"
+num_partition = 2
+Twolevel_Network(case, num_partition)
