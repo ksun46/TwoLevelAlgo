@@ -58,10 +58,10 @@ function ADMMg_Network(case, num_partition)
     println("Algorithm initialization finished ($(time() - time_init_start)).")
     iterCount = 1
     almCount = 1
-    epi=1e-5
+    epi= 1e-5
     beta = 1/(epi)^2 ## last block penalty
-    rho = 3*beta ## ADMM penalty
-    h = 0.01/epi ## proximal coefficient
+    rho = 3*beta     ## ADMM penalty
+    h = 0.01/epi     ## proximal coefficient
     step_size = 13/(14*rho)
     MaxIter = 1000
     time_loop_start = time()
@@ -91,10 +91,10 @@ function ADMMg_Network(case, num_partition)
         println("   Current ||Ax+Bx_bar+z||: $(re3)")
         println("   Current   ||Ax+Bx_bar||: $(re2)")
         println("   Current           ||z||: $(rez)")
+        res = re2
         ## chcek inner stop criteria
         if re2 <= epi * sqrt(dim_couple)
-            println("Converged successfully. ADMM_g Stopping Criteria Met at Iteration $almCount")
-            res = re2
+            println("Converged successfully. ADMM_g Stopping Criteria Met at Iteration $iterCount")
             break
         end
         iterCount +=1
@@ -104,10 +104,11 @@ function ADMMg_Network(case, num_partition)
     println("")
     println("Number of inner ADMM iterations: $iterCount")
     println("Objevtive value at termination: $gen_cost")
-    println("The Two-level Algorithm finished in $duration seconds.")
+    println("The ADMM-g Algorithm finished in $duration seconds.")
+    return Dict("Inner"=>iterCount, "Res"=>res, "Cost"=>gen_cost, "Time"=>duration)
 end
 
 
 case="case300"
-num_partition = 4
+num_partition = 2
 ADMMg_Network(case, num_partition)

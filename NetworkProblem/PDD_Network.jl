@@ -50,7 +50,7 @@ function PDD_Network(case, num_partition)
     iterCount = 1
     almCount = 1
     epi = 1e-5
-    rho = 1000.0
+    rho = 2000.0
     theta = 0.75
     gamma = 1.5
     MaxIter = 1000
@@ -82,8 +82,9 @@ function PDD_Network(case, num_partition)
         re2, L_obj = Calculate_metrics!(BlockSol, Global_copy, Dual_y, gen_cost,rho)
         println("   Current Generation Cost: $gen_cost")
         println("   Current   ||Ax+Bx_bar||: $(re2)")
+        res = re2
         ## chcek inner stop criteria
-        if abs(L_obj-L_prev)/ abs(L_prev) <= 1/(1e3) * 0.7^(almCount)
+        if abs(L_obj-L_prev)/ abs(L_prev) <= 1.0e-3 * (2/3)^(almCount)
             println("   BSUM terminates at iteration: ", iterCount)
             println("   ALM iteration $almCount finished")
             println("   Current rho is $rho")
@@ -91,7 +92,6 @@ function PDD_Network(case, num_partition)
             ## check outer stop criteria
             if re2 <= epi * sqrt(dim_couple)
                 println("Converged successfully. ALM Stopping Criteria Met at Iteration $almCount")
-                res = re2
                 break
             end
             eta = theta * min(eta, re2_prev)
@@ -107,15 +107,18 @@ function PDD_Network(case, num_partition)
         L_prev = L_obj
     end
     duration = time() - time_loop_start
+    iterCount = min(iterCount, MaxIter)
     println("")
     println("Number of inner BSUM iterations: $iterCount")
     println("Number of outer ALM  iterations: $almCount")
     println("Objevtive value at termination: $gen_cost")
     println("    Penalty rho at termination: $rho")
-    println("The Two-level Algorithm finished in $duration seconds.")
+    println("The PDD Algorithm finished in $duration seconds.")
+    return Dict("Inner"=>iterCount, "Outer"=>almCount, "Res"=>res,
+                "Cost"=>gen_cost, "Time"=>duration)
 end
 
 
 case="case300"
-num_partition = 4
+num_partition = 3
 PDD_Network(case, num_partition)

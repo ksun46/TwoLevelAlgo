@@ -190,7 +190,7 @@ function CentralizedNetworkSolver(case)
     nBus = length(Dict_Bus["BusIdx"])
     nGen = length(Dict_Gen["p_max"])
 
-    m = Model(solver = IpoptSolver(linear_solver = "MA57"))
+    m = Model(solver = IpoptSolver(linear_solver = "MA27"))
     @variable(m, c[i in 1:nBus], start = 1.0,
                  lowerbound = Dict_Bus["v_min"][i]^2,
                  upperbound = Dict_Bus["v_max"][i]^2)
@@ -241,7 +241,7 @@ function CentralizedNetworkSolver_SOCP(case)
     nBus = length(Dict_Bus["BusIdx"])
     nGen = length(Dict_Gen["p_max"])
 
-    m = Model(solver = IpoptSolver(linear_solver = "MA57"))
+    m = Model(solver = IpoptSolver(linear_solver = "MA27"))
     @variable(m, c[i in 1:nBus], start = 1.0,
                  lowerbound = Dict_Bus["v_min"][i]^2,
                  upperbound = Dict_Bus["v_max"][i]^2)
@@ -315,7 +315,7 @@ end
     Dict_Gen  = data_network["Gen"]
     B = data_network["B"]
     G = data_network["G"]
-    m = Model(solver = IpoptSolver(linear_solver="MA57", print_level=0))
+    m = Model(solver = IpoptSolver(linear_solver="MA27", print_level=0))
     total_bus = union(partition_k["SelfBus"],  partition_k["OtherBus"])
     total_line = []
     total_gen = []

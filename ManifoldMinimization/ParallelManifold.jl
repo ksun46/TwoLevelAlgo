@@ -18,6 +18,7 @@ MapZoneToWorker = Dict(k=>workersID[k] for k in 1:available_threads-1)
 @everywhere using Pkg
 @everywhere Pkg.activate(".")
 @everywhere using JuMP, Ipopt
+using Dates
 # @everywhere using MathOptInterface
 include("LibManifold.jl")
 import LinearAlgebra:norm
@@ -155,9 +156,9 @@ function ParallelManifold(np::Int64, bool_dual_update::Bool)
                     y[k][i] = -lmd[k][i]
                 end
             end
-            slack_z_prev = norm(z_list)
             almCount += 1
         end
+        slack_z_prev = norm(z_list)
         iterCount += 1
     end
     duration = time() - time_loop_start
@@ -172,21 +173,49 @@ function ParallelManifold(np::Int64, bool_dual_update::Bool)
     return solDict
 end
 
+function WriteManifoldOutput(solDict, np_list)
+    now = Dates.format(Dates.now(), "mmdd-HHMM")
+    output_dir = "ParallelManifoldResult$now.csv"
+    open(output_dir, "w") do f
+        write(f, "np, Central_Obj, Time, Method, Outer, Inner, Res, Obj, Time\n")
+        for np in np_list
+            central_obj = solDict[np]["central"]["obj"]
+            central_time = solDict[np]["central"]["time"]
 
-# ## run test
+            tl_inner = solDict[np]["ALM"]["Inner"]
+            tl_outer = solDict[np]["ALM"]["Outer"]
+            tl_res = solDict[np]["ALM"]["Res"]
+            tl_obj = solDict[np]["ALM"]["Obj"]
+            tl_time = solDict[np]["ALM"]["Time"]
+
+            p_inner = solDict[np]["Penalty"]["Inner"]
+            p_outer = solDict[np]["Penalty"]["Outer"]
+            p_res = solDict[np]["Penalty"]["Res"]
+            p_obj = solDict[np]["Penalty"]["Obj"]
+            p_time = solDict[np]["Penalty"]["Time"]
+
+            write(f, "$np, $central_obj, $central_time, Proposed, $tl_inner, $tl_outer, $tl_res, $tl_obj, $tl_time \n", )
+            write(f, " , , , Penalty, $p_inner, $p_outer, $p_res, $p_obj, $p_time \n", )
+        end
+    end
+end
+
+## run test
 np_list = [60, 90, 120, 180, 240, 300]
 solDict = Dict()
 for np in np_list
     tempDict=Dict()
-    m_central= CentralizedSovlerz_v018(np)
+    m_central= CentralizedSolver_v018(np)
     start = time()
     solve(m_central)
     time_central = time()-start
     tempDict["central"] = Dict("time"=>time_central, "obj"=>getobjectivevalue(m_central))
-    solDict_alm = ParallelManifold(np, true)
     solDict_penalty = ParallelManifold(np, false)
-    tempDict["ALM"] = solDict_alm
     tempDict["Penalty"] = solDict_penalty
+    solDict_alm = ParallelManifold(np, true)
+    tempDict["ALM"] = solDict_alm
     solDict[np] = tempDict
 end
-## output results
+
+## Ouput solution
+WriteManifoldOutput(solDict, np_list)

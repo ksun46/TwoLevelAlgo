@@ -81,6 +81,7 @@ function Twolevel_Network(case, num_partition)
         println("   Current ||Ax+Bx_bar+z||: $(re3)")
         println("   Current   ||Ax+Bx_bar||: $(re2)")
         println("   Current           ||z||: $(rez)")
+        res = re2
         ## chcek inner stop criteria
         if re3 <= max(epi, sqrt(dim_couple)/(rho * almCount))
             println("   ADMM terminates at iteration: ", iterCount)
@@ -90,7 +91,6 @@ function Twolevel_Network(case, num_partition)
             ## check outer stop criteria
             if re2 <= epi * sqrt(dim_couple)
                 println("Converged successfully. ALM Stopping Criteria Met at Iteration $almCount")
-                res = re2
                 break
             end
             ## update outer dual
@@ -109,12 +109,15 @@ function Twolevel_Network(case, num_partition)
         iterCount +=1
     end
     duration = time() - time_loop_start
+    iterCount = min(iterCount, MaxIter)
     println("")
     println("Number of inner ADMM iterations: $iterCount")
     println("Number of outer ALM  iterations: $almCount")
     println("Objevtive value at termination: $gen_cost")
     println("    Penalty_beta at termination: $beta")
     println("The Two-level Algorithm finished in $duration seconds.")
+    return Dict("Inner"=>iterCount, "Outer"=>almCount, "Res"=>res,
+                "Cost"=>gen_cost, "Time"=>duration)
 end
 
 

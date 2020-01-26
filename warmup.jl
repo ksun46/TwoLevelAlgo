@@ -16,7 +16,7 @@ using DataFrames
 using ExcelReaders
 using CSV
 
-## if a customized version of Ipopt with MA57 is already installed, then directly "using Ipopt";
+## if a customized version of Ipopt with MA27 is already installed, then directly "using Ipopt";
 ## otherwise run '''Pkg.add("Ipopt")''', where default linear solver MUMPS will be used,
 ## and perforamnce may be comproised
 using Ipopt
@@ -24,7 +24,7 @@ using Ipopt
 println("Test IPOPT in manager process...")
 
 ## JuMP 0.20
-# m_test = Model(with_optimizer(Ipopt.Optimizer, linear_solver = "ma57"))
+# m_test = Model(with_optimizer(Ipopt.Optimizer, linear_solver = "ma27"))
 # @variable(m_test, x[i in 1:10], lower_bound = 0.0, upper_bound = 1.0)
 # @constraint(m_test, sum(x) == 1.0)
 # @objective(m_test, Min, sum(i * x[i] for i in 1:10))
@@ -33,7 +33,7 @@ println("Test IPOPT in manager process...")
 # println("Ipopt works fine.")
 
 ## JuMP v0.18
-m_test = Model(solver=IpoptSolver(linear_solver="MA57"))
+m_test = Model(solver=IpoptSolver(linear_solver="MA27"))
 @variable(m_test, x[i in 1:10], lowerbound = 0.0, upperbound = 1.0)
 @constraint(m_test, sum(x) == 1.0)
 @objective(m_test, Min, sum(i * x[i] for i in 1:10))

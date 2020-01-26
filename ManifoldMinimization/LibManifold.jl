@@ -4,15 +4,21 @@ using Dates
 
 function CentralizedSolver_v018(np::Int64)
     println("Centralized Ipopt with np=$np")
-    m = Model(solver=IpoptSolver(linear_solver="MA57"))
+    m = Model(solver=IpoptSolver(linear_solver="MA27"))
     ## initial values
-    startx = [0.5 for i in 1:np]
-    starty = [0.5 for i in 1:np]
-    startz = [0.5 for i in 1:np]
+    startx = [0.2 for i in 1:np]
+    starty = [0.3 for i in 1:np]
+    startz = [0.1 for i in 1:np]
+    if np == 300 ## Ipopt encounters restoration failure for default inital values
+        startx = [0.5 for i in 1:np]
+        starty = [0.5 for i in 1:np]
+        startz = [0.4 for i in 1:np]
+    end
     ## add variables
     @variable(m, x[i in 1:np], lowerbound = -1.0, upperbound = 1.0, start = startx[i])
     @variable(m, y[i in 1:np], lowerbound = -1.0, upperbound = 1.0, start = starty[i])
     @variable(m, z[i in 1:np], lowerbound = -1.0, upperbound = 1.0, start = startz[i])
+
     # add constraints
     @NLconstraint(m, [i=1:np], x[i]^2 +y[i]^2+z[i]^2 == 1)
     # add objevtive
@@ -94,12 +100,12 @@ end
     end
     local_idx_set = union(collect(self_b:self_e), collect(other_b:other_e))
     # construct model
-    m = Model(solver=IpoptSolver(print_level=0, linear_solver="MA57"))
+    m = Model(solver=IpoptSolver(print_level=0, linear_solver="MA27"))
     @variable(m, x[local_idx_set], lowerbound = -1.0, upperbound = 1.0, start = 0.2)
     @variable(m, p[local_idx_set], lowerbound = -1.0, upperbound = 1.0, start = 0.3)
     @variable(m, q[local_idx_set], lowerbound = -1.0, upperbound = 1.0, start = 0.1)
     @variable(m, cost)
-    @constraint(m, [i in local_idx_set], x[i]^2 +p[i]^2+q[i]^2 == 1)
+    @NLconstraint(m, [i in local_idx_set], x[i]^2 +p[i]^2+q[i]^2 == 1)
 
     # add objective
     couple_dict = Dict()
