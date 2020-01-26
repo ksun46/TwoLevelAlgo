@@ -4,7 +4,7 @@ time_compilation_start = time()
 println("Start compilation...")
 Max_threads = Sys.CPU_THREADS
 println("  Max number of threads is $Max_threads, 4 of which will be used.")
-available_threads = 4 #trunc(Int, Sys.CPU_THREADS*0.75)
+available_threads = 5 #trunc(Int, Sys.CPU_THREADS*0.75)
 if Distributed.nprocs() < available_threads
     println("  Add worker processes ...")
     Distributed.addprocs(available_threads - Distributed.nprocs())
@@ -48,8 +48,9 @@ function Twolevel_Network(case, num_partition)
     println("Algorithm initialization finished ($(time() - time_init_start)).")
     iterCount = 1
     almCount = 1
-    rho = 1000
-    beta = 2*rho
+    epi = 1e-5
+    beta = 1000.0
+    rho = 2*beta
     theta = 0.75
     gamma = 1.5
     MaxIter = 1000
@@ -61,6 +62,7 @@ function Twolevel_Network(case, num_partition)
     dim_couple = sum(length(Dict_Location[i]) for i in keys(Dict_Location)) +
         2 * length(keys(Dict_Location_Line))
     while iterCount <= MaxIter
+        println("Inner ADMM iteration $iterCount starts...")
         obj_list = [0.0 for k in 1:num_partition]
         @sync for k in 1:num_partition
             @async begin
@@ -80,13 +82,13 @@ function Twolevel_Network(case, num_partition)
         println("   Current   ||Ax+Bx_bar||: $(re2)")
         println("   Current           ||z||: $(rez)")
         ## chcek inner stop criteria
-        if re3 <= max(1.0e-5, sqrt(dim_couple)/(rho * almCount))
+        if re3 <= max(epi, sqrt(dim_couple)/(rho * almCount))
             println("   ADMM terminates at iteration: ", iterCount)
             println("   ALM iteration $almCount finished")
             println("   Current beta is $beta")
             println("")
             ## check outer stop criteria
-            if re2 <= 1e-6 * sqrt(dim_couple)
+            if re2 <= epi * sqrt(dim_couple)
                 println("Converged successfully. ALM Stopping Criteria Met at Iteration $almCount")
                 res = re2
                 break
@@ -116,6 +118,6 @@ function Twolevel_Network(case, num_partition)
 end
 
 
-case="case14"
-num_partition = 2
+case="case300"
+num_partition = 4
 Twolevel_Network(case, num_partition)
