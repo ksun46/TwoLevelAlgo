@@ -32,7 +32,7 @@ This will generate `NetworkResult$(mmdd-HHMM).csv`
 ### Parallel Minimization over Compact Manifold
 In this part, one master and three workers threads will be used. So a total of four threads should be available.
 ```
-julia>include("ManifoldMinimization/ParallelManifold")
+julia>include("ManifoldMinimization/ParallelManifold.jl")
 ```
 This will generate `ParallelManifoldResult$(mmdd-HHMM).csv`
 ### Robust Tensor PCA
