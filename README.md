@@ -23,13 +23,11 @@ include("warmup.jl")
 include("NetorkProblem/Test_Network.jl")
 
 ```
-
 ### Parallel Minimization over Compact Manifold
 ```
 include("ManifoldMinimization/ParallelManifold")
 
 ```
-
 ### Robust Tensor PCA
 ```
 include("RobustTensorPCA/Test_Network.jl")
