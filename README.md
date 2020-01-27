@@ -40,6 +40,6 @@ This will generate `ParallelManifoldResult$(mmdd-HHMM).csv`. This script takes a
 ### Robust Tensor PCA
 This part is implemented in single thread.
 ```julia
-include("RobustTensorPCA/Test_Network.jl")
+include("RobustTensorPCA/RobustTensorPCA.jl")
 ```
 This will generate `combined_pca_err.pdf` and `combined_pca_res.pdf`. This script takes around 1 hrs.
