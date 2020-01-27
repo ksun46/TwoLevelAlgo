@@ -19,13 +19,13 @@ All other Julia pacakges can be installed by running the script `warmup.jl`
 ## Reproduce Results 
 Change current directory to the folder of this project, and activate a Julia session.
 ### Install Required Packages
-In this part, one master and up to four workers threads will be used.
+In this part, one master and up to four workers threads will be used. So a total of five threads should be available.
 ```
 julia>include("warmup.jl")
 ```
 Please check the screen output to make sure Ipopt is installed correctly.
 ### Network Problem
-In this part, one master and three workers threads will be used.
+In this part, one master and three workers threads will be used. So a total of four threads should be available.
 ```
 julia>include("NetorkProblem/Test_Network.jl")
 ```
