@@ -121,6 +121,6 @@ function Twolevel_Network(case, num_partition)
 end
 
 
-case="case300"
-num_partition = 4
-Twolevel_Network(case, num_partition)
+# case="case300"
+# num_partition = 4
+# Twolevel_Network(case, num_partition)

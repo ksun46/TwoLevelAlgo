@@ -84,7 +84,7 @@ function PDD_Network(case, num_partition)
         println("   Current   ||Ax+Bx_bar||: $(re2)")
         res = re2
         ## chcek inner stop criteria
-        if abs(L_obj-L_prev)/ abs(L_prev) <= 1.0e-3 * (2/3)^(almCount)
+        if abs(L_obj-L_prev)/ abs(L_prev) <= max(epi,1.0e-3 * (2/3)^(almCount))
             println("   BSUM terminates at iteration: ", iterCount)
             println("   ALM iteration $almCount finished")
             println("   Current rho is $rho")
@@ -118,7 +118,7 @@ function PDD_Network(case, num_partition)
                 "Cost"=>gen_cost, "Time"=>duration)
 end
 
-
-case="case300"
-num_partition = 3
-PDD_Network(case, num_partition)
+#
+# case="case300"
+# num_partition = 3
+# PDD_Network(case, num_partition)

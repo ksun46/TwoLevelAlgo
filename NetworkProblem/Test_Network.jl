@@ -2,27 +2,6 @@ include("Twolevel_Network.jl")
 include("PDD_Network.jl")
 include("ADMMg_Network.jl")
 using Dates
-List_network = ["case14", "case118", "case300", "case1354"]
-List_partition = [2, 3, 4]
-
-solDict = Dict()
-for case in List_network
-    caseDict = Dict(k=>Dict() for k in List_partition)
-    m_central = CentralizedNetworkSolver(case)
-    solve(m_central)
-    m_socp = CentralizedNetworkSolver_SOCP(case)
-    solve(m_socp)
-    central_obj = getobjectivevalue(m_central)
-    socp_obj = getobjectivevalue(m_socp)
-    caseDict["central"] = central_obj
-    caseDict["socp"] = socp_obj
-    for k in List_partition
-        caseDict[k]["ADMMg"] = ADMMg_Network(case, k)
-        caseDict[k]["PDD"] = PDD_Network(case, k)
-        caseDict[k]["Proposed"] = Twolevel_Network(case, k)
-    end
-    solDict["case"] = caseDict
-end
 
 function WriteNetworkSol(solDict, List_network, List_partition)
     now = Dates.format(Dates.now(), "mmdd-HHMM")
@@ -32,7 +11,7 @@ function WriteNetworkSol(solDict, List_network, List_partition)
 
         for case in List_network
             for k in List_partition
-                case_k = "$(case)-k"
+                case_k = "$(case)-$(k)"
                 central_obj = solDict[case]["central"]
                 central_socp= solDict[case]["socp"]
 
@@ -59,3 +38,29 @@ function WriteNetworkSol(solDict, List_network, List_partition)
         end
     end
 end
+
+List_network = ["case14", "case118", "case300", "case1354"]
+List_partition = [2, 3, 4]
+
+solDict = Dict()
+for case in List_network
+    caseDict = Dict()
+    m_central = CentralizedNetworkSolver(case)
+    solve(m_central)
+    m_socp = CentralizedNetworkSolver_SOCP(case)
+    solve(m_socp)
+    central_obj = getobjectivevalue(m_central)
+    socp_obj = getobjectivevalue(m_socp)
+    caseDict["central"] = central_obj
+    caseDict["socp"] = socp_obj
+
+    for k in List_partition
+        caseDict[k] = Dict()
+        caseDict[k]["ADMMg"] = ADMMg_Network(case, k)
+        caseDict[k]["PDD"] = PDD_Network(case, k)
+        caseDict[k]["Proposed"] = Twolevel_Network(case, k)
+    end
+    solDict[case] = caseDict
+end
+
+WriteNetworkSol(solDict, List_network, List_partition)

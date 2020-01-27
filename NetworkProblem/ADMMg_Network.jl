@@ -62,7 +62,7 @@ function ADMMg_Network(case, num_partition)
     beta = 1/(epi)^2 ## last block penalty
     rho = 3*beta     ## ADMM penalty
     h = 0.01/epi     ## proximal coefficient
-    step_size = 13/(14*rho)
+    step_size = 1/(rho)
     MaxIter = 1000
     time_loop_start = time()
     gen_cost = 0.0
@@ -108,7 +108,7 @@ function ADMMg_Network(case, num_partition)
     return Dict("Inner"=>iterCount, "Res"=>res, "Cost"=>gen_cost, "Time"=>duration)
 end
 
-
-case="case300"
-num_partition = 2
-ADMMg_Network(case, num_partition)
+#
+# case="case300"
+# num_partition = 2
+# ADMMg_Network(case, num_partition)

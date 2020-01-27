@@ -477,6 +477,7 @@ function UpdateOuterDual!(Dual_lmd, Slack_z, beta, lmd_bd)
 end
 
 function InitializeInner!(Dual_y, Dual_lmd, Slack_z)
+    num_partition = length(keys(Dual_y))
     for k in 1:num_partition
         for l in keys(Slack_z[k]["Line"])
             Slack_z[k]["Line"][l] = [0.0, 0.0]
