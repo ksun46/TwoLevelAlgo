@@ -20,17 +20,17 @@ All other Julia pacakges can be installed by running the script `warmup.jl`
 Change current directory to the folder of this project, and activate a Julia session.
 ### Install Required Packages
 ```
-include("warmup.jl")
+julia>include("warmup.jl")
 ```
 ### Network Problem
 ```
-include("NetorkProblem/Test_Network.jl")
+julia>include("NetorkProblem/Test_Network.jl")
 ```
 ### Parallel Minimization over Compact Manifold
 ```
-include("ManifoldMinimization/ParallelManifold")
+julia>include("ManifoldMinimization/ParallelManifold")
 ```
 ### Robust Tensor PCA
 ```
-include("RobustTensorPCA/Test_Network.jl")
+julia>include("RobustTensorPCA/Test_Network.jl")
 ```
