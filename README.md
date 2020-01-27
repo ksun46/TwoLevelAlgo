@@ -22,15 +22,19 @@ Change current directory to the folder of this project, and activate a Julia ses
 ```
 julia>include("warmup.jl")
 ```
+Please check the screen output to make sure Ipopt is installed correctly.
 ### Network Problem
 ```
 julia>include("NetorkProblem/Test_Network.jl")
 ```
+This will generate `NetworkResult$(mmdd-HHMM).csv`
 ### Parallel Minimization over Compact Manifold
 ```
 julia>include("ManifoldMinimization/ParallelManifold")
 ```
+This will generate `ParallelManifoldResult$(mmdd-HHMM).csv`
 ### Robust Tensor PCA
 ```
 julia>include("RobustTensorPCA/Test_Network.jl")
 ```
+This will generate `combined_pca_err.pdf` and `combined_pca_res.pdf`
