@@ -37,7 +37,7 @@ julia>include("ManifoldMinimization/ParallelManifold.jl")
 ```
 This will generate `ParallelManifoldResult$(mmdd-HHMM).csv`
 ### Robust Tensor PCA
-This part is implememnted in a single thread.
+This part is implemented in single thread.
 ```
 julia>include("RobustTensorPCA/Test_Network.jl")
 ```
