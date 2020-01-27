@@ -19,11 +19,13 @@ All other Julia pacakges can be installed by running the script `warmup.jl`
 ## Reproduce Results 
 Change current directory to the folder of this project, and activate a Julia session.
 ### Install Required Packages
+In this part, one master and up to four workers threads will be used.
 ```
 julia>include("warmup.jl")
 ```
 Please check the screen output to make sure Ipopt is installed correctly.
 ### Network Problem
+In this part, one master and three workers threads will be used.
 ```
 julia>include("NetorkProblem/Test_Network.jl")
 ```
@@ -34,6 +36,7 @@ julia>include("ManifoldMinimization/ParallelManifold")
 ```
 This will generate `ParallelManifoldResult$(mmdd-HHMM).csv`
 ### Robust Tensor PCA
+This part is implememnted in a single thread.
 ```
 julia>include("RobustTensorPCA/Test_Network.jl")
 ```
