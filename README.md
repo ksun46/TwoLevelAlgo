@@ -18,18 +18,18 @@ Notice that the Ipopt by default uses linear solver MUMPS, which may potentially
 All Julia pacakges can be installed by running the script `warmup.jl` (run `Pkg.add("Ipopt")` if Ipopt is not available).
 
 ## Reproduce Results 
-The results obtained by the aurthor can be found in the folder `Result_KS`. To reproduce results, change current directory to the folder of this project, and activate a Julia session. If Julia reports `julia Failed to precompile ExcelReaders`
-while executing `using ExcelReaders`, try
-```julia
-Pkg.build("ExcelReaders")
-```
-and then re-run the script.
+The results obtained by the aurthor can be found in the folder `Result_KS`. To reproduce results, change current directory to the folder of this project, and activate a Julia session.
 ### Install Required Packages
 Execute
 ```julia
 include("warmup.jl")
 ```
-The software packages specified in `Project.toml` and `Manifest.toml` will be installed. Please also check the screen output to make sure Ipopt is installed correctly.
+The software packages specified in `Project.toml` and `Manifest.toml` will be installed. If Julia reports `julia Failed to precompile ExcelReaders`
+while executing `using ExcelReaders`, try
+```julia
+Pkg.build("ExcelReaders")
+```
+and then re-run the script. Please also check the screen output to make sure Ipopt and linear solver are installed correctly.
 ### Network Problem
 In this part, one master and up to four workers threads will be used. So a total of five threads should be available. Execute
 ```julia
