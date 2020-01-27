@@ -21,7 +21,7 @@ All Julia pacakges can be installed by running the script `warmup.jl` (run `Pkg.
 The results obtained by the aurthor can be found in the folder `Result_KS`. To reproduce results, change current directory to the folder of this project, and activate a Julia session.
 ### Install Required Packages
 ```julia
-julia>include("warmup.jl")
+<span style="color:green">some *blue* text</span>include("warmup.jl")
 ```
 The software packages specified in `Project.toml` and `Manifest.toml` will be installed. Please also check the screen output to make sure Ipopt is installed correctly.
 ### Network Problem
