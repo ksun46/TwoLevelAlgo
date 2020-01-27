@@ -29,16 +29,16 @@ In this part, one master and up to four workers threads will be used. So a total
 ```
 julia>include("NetorkProblem/Test_Network.jl")
 ```
-This will generate `NetworkResult$(mmdd-HHMM).csv`
+This will generate `NetworkResult$(mmdd-HHMM).csv`. This script takes around 1.5 hrs.
 ### Parallel Minimization over Compact Manifold
 In this part, one master and three workers threads will be used. So a total of four threads should be available.
 ```
 julia>include("ManifoldMinimization/ParallelManifold.jl")
 ```
-This will generate `ParallelManifoldResult$(mmdd-HHMM).csv`
+This will generate `ParallelManifoldResult$(mmdd-HHMM).csv`. This script takes around 2.5 hrs.
 ### Robust Tensor PCA
 This part is implemented in single thread.
 ```
 julia>include("RobustTensorPCA/Test_Network.jl")
 ```
-This will generate `combined_pca_err.pdf` and `combined_pca_res.pdf`
+This will generate `combined_pca_err.pdf` and `combined_pca_res.pdf`. This script takes around 1 hrs.
