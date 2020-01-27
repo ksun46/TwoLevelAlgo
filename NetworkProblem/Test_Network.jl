@@ -7,7 +7,7 @@ function WriteNetworkSol(solDict, List_network, List_partition)
     now = Dates.format(Dates.now(), "mmdd-HHMM")
     output_dir = "NetworkResult$now.csv"
     open(output_dir, "w") do f
-        write(f, "case, Central_Obj, SOCP_LB, Method, Outer, Inner, Res, Obj, Time\n")
+        write(f, "case, Central_Obj, SOCP_LB, Method, Outer, Inner, Res, Obj, Gap, Time\n")
 
         for case in List_network
             for k in List_partition
@@ -19,21 +19,24 @@ function WriteNetworkSol(solDict, List_network, List_partition)
                 admm_res = solDict[case][k]["ADMMg"][ "Res"]
                 admm_obj = solDict[case][k]["ADMMg"]["Cost"]
                 admm_time = solDict[case][k]["ADMMg"]["Time"]
-                write(f, "$case_k, $central_obj, $central_socp, ADMMg, , $admm_inner, $admm_res, $admm_obj, $admm_time\n")
+                admm_gap = (admm_obj-central_socp)/admm_obj
+                write(f, "$case_k, $central_obj, $central_socp, ADMMg, , $admm_inner, $admm_res, $admm_obj, $admm_gap, $admm_time\n")
 
                 pdd_inner = solDict[case][k]["PDD"]["Inner"]
                 pdd_outer = solDict[case][k]["PDD"]["Outer"]
                 pdd_res = solDict[case][k]["PDD"][ "Res"]
                 pdd_obj = solDict[case][k]["PDD"]["Cost"]
                 pdd_time = solDict[case][k]["PDD"]["Time"]
-                write(f, " , , , PDD, $pdd_outer, $pdd_inner, $pdd_res, $pdd_obj, $pdd_time\n")
+                pdd_gap = (pdd_obj - central_socp)/pdd_obj
+                write(f, " , , , PDD, $pdd_outer, $pdd_inner, $pdd_res, $pdd_obj,$pdd_gap, $pdd_time\n")
 
                 tl_inner = solDict[case][k]["Proposed"]["Inner"]
                 tl_outer = solDict[case][k]["Proposed"]["Outer"]
                 tl_res = solDict[case][k]["Proposed"][ "Res"]
                 tl_obj = solDict[case][k]["Proposed"]["Cost"]
                 tl_time = solDict[case][k]["Proposed"]["Time"]
-                write(f, " , , , Proposed, $tl_outer, $tl_inner, $tl_res, $tl_obj, $tl_time\n")
+                tl_gap = (tl_obj-central_socp)/tl_obj
+                write(f, " , , , Proposed, $tl_outer, $tl_inner, $tl_res, $tl_obj,$tl_gap, $tl_time\n")
             end
         end
     end

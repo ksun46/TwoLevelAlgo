@@ -275,8 +275,8 @@ function CentralizedNetworkSolver_SOCP(case)
     c2 = Dict_Gen["c2"]
     c1 = Dict_Gen["c1"]
     c0 = Dict_Gen["c0"]
-    obj = sum(c2[i]*p_g[i]^2 + c1[i]*p_g[i] + c0[i] for i in 1:nGen)
-    # obj = sum(c1[i]*p_g[i] for i in 1:nGen)
+    # obj = sum(c2[i]*p_g[i]^2 + c1[i]*p_g[i] + c0[i] for i in 1:nGen)
+    obj = sum(c1[i]*p_g[i] for i in 1:nGen)
     @objective(m, Min, obj)
     return m
 end

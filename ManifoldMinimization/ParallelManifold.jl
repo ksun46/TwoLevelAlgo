@@ -177,7 +177,7 @@ function WriteManifoldOutput(solDict, np_list)
     now = Dates.format(Dates.now(), "mmdd-HHMM")
     output_dir = "ParallelManifoldResult$now.csv"
     open(output_dir, "w") do f
-        write(f, "np, Central_Obj, Time, Method, Outer, Inner, Res, Obj, Time\n")
+        write(f, "np, Central_Obj, Time, Method, Outer, Inner, Res, Obj,Gap, Time\n")
         for np in np_list
             central_obj = solDict[np]["central"]["obj"]
             central_time = solDict[np]["central"]["time"]
@@ -187,15 +187,15 @@ function WriteManifoldOutput(solDict, np_list)
             tl_res = solDict[np]["ALM"]["Res"]
             tl_obj = solDict[np]["ALM"]["Obj"]
             tl_time = solDict[np]["ALM"]["Time"]
-
+            tl_gap = (tl_obj - central_obj)/tl_obj
             p_inner = solDict[np]["Penalty"]["Inner"]
             p_outer = solDict[np]["Penalty"]["Outer"]
             p_res = solDict[np]["Penalty"]["Res"]
             p_obj = solDict[np]["Penalty"]["Obj"]
             p_time = solDict[np]["Penalty"]["Time"]
-
-            write(f, "$np, $central_obj, $central_time, Proposed, $tl_inner, $tl_outer, $tl_res, $tl_obj, $tl_time \n", )
-            write(f, " , , , Penalty, $p_inner, $p_outer, $p_res, $p_obj, $p_time \n", )
+            p_gap = (p_obj - central_obj)/p_obj
+            write(f, "$np, $central_obj, $central_time, Proposed, $tl_inner, $tl_outer, $tl_res, $tl_obj, $tl_gap, $tl_time \n", )
+            write(f, " , , , Penalty, $p_inner, $p_outer, $p_res, $p_obj,$p_gap, $p_time \n", )
         end
     end
 end
