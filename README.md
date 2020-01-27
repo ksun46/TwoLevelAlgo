@@ -15,7 +15,7 @@ The results from `Result_KS` are generated on a 2018 MacBook Pro
 * Ipopt v3.12.8: Linear solver MA27 is used in all related experiments. If not available on the testing environment, Ipopt can be installed from [`Ipopt.jl`](https://github.com/JuliaOpt/Ipopt.jl), where custom installation is also discussed. See also [here](https://coin-or.github.io/Ipopt/INSTALL.html) on how to obtain the HSL thrid party library.
 Notice that the Ipopt by default uses linear solver MUMPS, which may potentially compromise the performance on large problems.
 
-All Julia pacakges can be installed by running the script `warmup.jl` (uncomment `Pkg.add("Ipopt")` if Ipopt is not available).
+All Julia pacakges can be installed by running the script `warmup.jl` (run `Pkg.add("Ipopt")` if Ipopt is not available).
 
 ## Reproduce Results 
 Change current directory to the folder of this project, and activate a Julia session.
