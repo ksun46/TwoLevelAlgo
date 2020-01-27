@@ -20,22 +20,23 @@ All Julia pacakges can be installed by running the script `warmup.jl` (run `Pkg.
 ## Reproduce Results 
 The results obtained by the aurthor can be found in the folder `Result_KS`. To reproduce results, change current directory to the folder of this project, and activate a Julia session.
 ### Install Required Packages
+Execute
 ```julia
 include("warmup.jl")
 ```
 The software packages specified in `Project.toml` and `Manifest.toml` will be installed. Please also check the screen output to make sure Ipopt is installed correctly.
 ### Network Problem
-In this part, one master and up to four workers threads will be used. So a total of five threads should be available.
+In this part, one master and up to four workers threads will be used. So a total of five threads should be available. Execute
 ```julia
 include("NetorkProblem/Test_Network.jl")
 ```
 This will generate `NetworkResult$(mmdd-HHMM).csv`. This script takes around 1.5 hrs.
 ### Parallel Minimization over Compact Manifold
-In this part, one master and three workers threads will be used. So a total of four threads should be available.
+In this part, one master and three workers threads will be used. So a total of four threads should be available. Execute
 ```julia
 include("ManifoldMinimization/ParallelManifold.jl")
 ```
-This will generate `ParallelManifoldResult$(mmdd-HHMM).csv`. This script takes around 2.5 hrs.
+This will generate `ParallelManifoldResult$(mmdd-HHMM).csv`. This script takes around 2.5 hrs. Execute
 ### Robust Tensor PCA
 This part is implemented in single thread.
 ```julia
