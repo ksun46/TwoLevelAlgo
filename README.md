@@ -41,9 +41,9 @@ In this part, one master and three workers threads will be used. So a total of f
 ```julia
 include("ManifoldMinimization/ParallelManifold.jl")
 ```
-This will generate `ParallelManifoldResult$(mmdd-HHMM).csv`. This script takes around 2.5 hrs. Execute
+This will generate `ParallelManifoldResult$(mmdd-HHMM).csv`. This script takes around 2.5 hrs. 
 ### Robust Tensor PCA
-This part is implemented in single thread.
+This part is implemented in single thread. Execute
 ```julia
 include("RobustTensorPCA/RobustTensorPCA.jl")
 ```
