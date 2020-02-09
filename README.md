@@ -1,5 +1,5 @@
 # TwoLevelAlgo
-Numerical Experimeents for the manuscript <em>A Two-level Distributed Algorithm for Nonconvex Constrained Optimization</em>
+Numerical Experiments for the manuscript <em>A Two-level Distributed Algorithm for Nonconvex Constrained Optimization</em>
 
 # Description
 
