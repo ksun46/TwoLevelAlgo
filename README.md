@@ -18,7 +18,7 @@ Notice that the Ipopt by default uses linear solver MUMPS, which may potentially
 All Julia pacakges can be installed by running the script `warmup.jl` (run `Pkg.add("Ipopt")` if Ipopt is not available).
 
 ## Reproduce Results 
-The results obtained by the aurthor can be found in the folder `Result_KS`. To reproduce results, change current directory to the folder of this project, and activate a Julia session.
+The results obtained by the aurthor can be found in the folder `Result_KS`. To reproduce results, clone this repository, and make sure Julia is properly installed on the testing environment. Then change current directory to the folder of this project, and activate a Julia session.
 ### Install Required Packages
 Execute
 ```julia
