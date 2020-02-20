@@ -29,7 +29,7 @@ while executing `using ExcelReaders`, try
 ```julia
 Pkg.build("ExcelReaders")
 ```
-and then re-run the script. Please also check the screen output to make sure Ipopt and linear solver are installed correctly.
+and then re-run the script. Though not observed by the authors, if any other pacakage reports compilation errors, please also try to run `Pkg.build("$PACKAGE_NAME")` to see if the problem can be fixed. Please also check the screen output to make sure Ipopt and linear solver are installed correctly.
 ### Network Problem
 In this part, one master and up to four workers threads will be used. So a total of five threads should be available. Execute
 ```julia
