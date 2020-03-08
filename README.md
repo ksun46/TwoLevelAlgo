@@ -12,8 +12,7 @@ The results from `Result_KS` are generated on a 2018 MacBook Pro
 ## Software
 * Julia v1.1.0
 * JuMP v0.18: This earlier version of JuMP is used in all related experiments, where the underlying solver interface is provided by `MathProgBase`. We notice that later versions of JuMP using `MathOptInterface` will slow down our algorithms, especiall when parallization is used.
-* Ipopt v3.12.8: Linear solver MA27 is used in all related experiments. If not available on the testing environment, Ipopt can be installed from [`Ipopt.jl`](https://github.com/JuliaOpt/Ipopt.jl), where custom installation is also discussed. See also [here](https://coin-or.github.io/Ipopt/INSTALL.html) on how to obtain the HSL thrid party library.
-Notice that the Ipopt by default uses linear solver MUMPS, which may potentially compromise the performance on large problems.
+* Ipopt v3.12.8: Linear solver MA27 is used in all related experiments. If not available on the testing environment, Ipopt can be installed from [`Ipopt.jl`](https://github.com/JuliaOpt/Ipopt.jl). However, notice that this version of Ipopt uses linear solver MUMPS, which may potentially compromise the performance on large problems. 
 
 All Julia pacakges can be installed by running the script `warmup.jl` (run `Pkg.add("Ipopt")` if Ipopt is not available).
 
@@ -29,7 +28,8 @@ while executing `using ExcelReaders`, try
 ```julia
 Pkg.build("ExcelReaders")
 ```
-and then re-run the script. Though not observed by the authors, if any other pacakage reports compilation errors, please also try to run `Pkg.build("$PACKAGE_NAME")` to see if the problem can be fixed. Please also check the screen output to make sure Ipopt and linear solver are installed correctly.
+and then re-run the script. Though not observed by the authors, if any other pacakage reports compilation errors, please also try to run `Pkg.build("$PACKAGE_NAME")` to see if the problem can be fixed. 
+A customized version of Ipopt (with HSL linear solvers) is assumed to be already installed, so that executing `using Ipopt` should be successful without any errors. There are two ways to obtian Ipopt: 1. execute 'Pkg.add("Ipopt")' and then `using Ipopt`. This approach downloads Ipopt binaries from [`Ipopt.jl`](https://github.com/JuliaOpt/Ipopt.jl), and Ipopt is immediately ready to be used. However, this version of Ipopt uses linear solver MUMPS, which may not be able to reproduce results reported in the folder `Result_KS`. 2. Obtain Ipopt and HSL thrid party library according to this [documentation](https://coin-or.github.io/Ipopt/INSTALL.html), and then follow the [Custom Installation section](https://github.com/JuliaOpt/Ipopt.jl) to use customized Ipopt in Julia; or one can go to `~/.julia/packages/Ipopt/Iu7vT/deps` (`Iu7vT` is a folder that contains a version of Ipopt that will be used in this project; make sure from Julia console output that this is the version being used when running this project), open `deps.jl`, and point the variables `libipopt` and `amplexe` to the dylib and binary files of the customized Ipopt. When running `warmup.jl`, please also check the screen output to make sure Ipopt and linear solver are installed correctly.
 ### Network Problem
 In this part, one master and up to four workers threads will be used. So a total of five threads should be available. Execute
 ```julia
