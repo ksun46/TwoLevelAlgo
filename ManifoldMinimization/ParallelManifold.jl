@@ -200,22 +200,25 @@ function WriteManifoldOutput(solDict, np_list)
     end
 end
 
-## run test
+# run test
 np_list = [60, 90, 120, 180, 240, 300]
 solDict = Dict()
 for np in np_list
     tempDict=Dict()
+    ## Run centralized Ipopt
     m_central= CentralizedSolver_v018(np)
     start = time()
     solve(m_central)
     time_central = time()-start
     tempDict["central"] = Dict("time"=>time_central, "obj"=>getobjectivevalue(m_central))
     solDict_penalty = ParallelManifold(np, false)
+    ## Run penalty formulation
     tempDict["Penalty"] = solDict_penalty
     solDict_alm = ParallelManifold(np, true)
+    ## Run penalty two-level formulation
     tempDict["ALM"] = solDict_alm
     solDict[np] = tempDict
 end
 
-## Ouput solution
+# Ouput solution
 WriteManifoldOutput(solDict, np_list)

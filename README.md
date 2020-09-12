@@ -1,10 +1,11 @@
 # TwoLevelAlgo
 Numerical Experiments for the manuscript <em>A Two-level Distributed Algorithm for Nonconvex Constrained Optimization</em>
 
+The Github repository is [here](https://github.com/ksun46/TwoLevelAlgo)
 # Description
 
 ## Hardware
-The results from `Result_KS` are generated on a 2018 MacBook Pro 
+The results from `Result_KS` are generated on a 2018 MacBook Pro
 * Processor: 2.6 GHz Intel Core i7
 * Number of cores: 6
 * Memory: 16GB
@@ -16,8 +17,16 @@ The results from `Result_KS` are generated on a 2018 MacBook Pro
 
 All Julia pacakges can be installed by running the script `warmup.jl` (run `Pkg.add("Ipopt")` if Ipopt is not available).
 
-## Reproduce Results 
-The results obtained by the aurthor can be found in the folder `Result_KS`. To reproduce results, clone this repository, and make sure a version of Julia is properly installed on the testing environment (Julia 1.1 is used by the author and other versions of Julia haven't been tested). Then change current directory to the folder of this project, and activate a Julia session.
+## Reproduce Results
+The results obtained by the aurthor can be found in the folder `Result_KS`. To reproduce results, clone this repository, and make sure a version of Julia is properly installed on the testing environment (Julia 1.1 is used by the author and other versions of Julia haven't been tested).
+
+### For Technical Editor (NEW)
+Since Julia and all dependencies are already set up on the testing environment,
+the technical editor should not worry about the Ipopt issues mentioned above.
+The easiest way to reproduce all results is to simply execute the bash script file `sh test.sh`.
+
+Alternatively, the technical editor can change current directory to the folder of this project, activate a Julia session, and execute the following lines of codes.
+
 ### Install Required Packages
 Execute
 ```julia
@@ -37,13 +46,13 @@ In this part, one master and up to four workers threads will be used. So a total
 ```julia
 include("NetorkProblem/Test_Network.jl")
 ```
-This will generate `NetworkResult$(mmdd-HHMM).csv`. This script takes around 1.5 hrs.
+This will generate `NetworkResult$(mmdd-HHMM).csv`. This script takes around 1 hr.
 ### Parallel Minimization over Compact Manifold
 In this part, one master and three workers threads will be used. So a total of four threads should be available. Execute
 ```julia
 include("ManifoldMinimization/ParallelManifold.jl")
 ```
-This will generate `ParallelManifoldResult$(mmdd-HHMM).csv`. This script takes around 2.5 hrs. 
+This will generate `ParallelManifoldResult$(mmdd-HHMM).csv`. This script takes around 2 hrs.
 ### Robust Tensor PCA
 This part is implemented in single thread. Execute
 ```julia

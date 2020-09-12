@@ -6,7 +6,7 @@ Pkg.instantiate()
 Pkg.status()
 
 using Distributed
-using JuMP      ## An earlier version JuMP v0.18 should be used for this project
+using JuMP      ## An earlier version JuMP v0.18.6 should be used for this project
 using Plots
 using TensorToolbox
 using Dates
@@ -20,6 +20,9 @@ using CSV
 ## otherwise run '''Pkg.add("Ipopt")''', where default linear solver MUMPS will be used,
 ## and perforamnce may be comproised
 using Ipopt
+ENV["JULIA_IPOPT_LIBRARY_PATH"] = "/Users/kaizhaosun/coinOR/Ipopt/build/lib"
+ENV["JULIA_IPOPT_EXECUTABLE_PATH"] =  "/Users/kaizhaosun/coinOR/Ipopt/build/bin"
+Pkg.build("Ipopt")
 ## test IPOPT
 println("Test IPOPT in manager process...")
 

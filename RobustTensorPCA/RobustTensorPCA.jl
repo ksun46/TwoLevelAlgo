@@ -197,10 +197,14 @@ for Rcp in RcpList
     resTL = []
     errADMM = []
     errTL = []
+    ## for each CP rank, generate num_test =10 instances
     for k in 1:num_test
         Z, E, BB, T, T1, R, A, B, C, Z1,E1,BB1, Y1 = GenerateData(Rcp)
+        ## run one-level ADMM-g
         Z_one, reList1, errList1 = ADMM_g(A, B, C, E1, Z,Z1, BB1, T1, Y1, R)
+        ## run two-level
         Z_two, reList2, errList2 = Two_Level_g(A, B, C, E1, Z,Z1, BB1, T1, Y1, R)
+        ## record res and error
         error1 =norm(Z_one-Z1)/norm(Z1)
         error2 =norm(Z_two-Z1)/norm(Z1)
         push!(err, (error1, error2))
@@ -224,6 +228,7 @@ for Rcp in RcpList
     for i in 1:maxIter
         val_admm = 1.0
         val_tl = 1.0
+        ## calculate geometric error and residual
         for k in 1:num_test
             val_admm = val_admm * solDict[Rcp]["resADMM"][k][i]
             val_tl = val_tl * solDict[Rcp]["resTL"][k][i]
