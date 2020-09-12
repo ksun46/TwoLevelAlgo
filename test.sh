@@ -2,7 +2,9 @@
 timestamp=`date +%m%d-%H%M`
 
 ## julia
-julia_cmd="alias julia=/Applications/Julia-1.1.app/Contents/Resources/julia/bin/julia"
+# julia_cmd="alias julia=/Applications/Julia-1.1.app/Contents/Resources/julia/bin/julia"
+# for MPC VM
+julia_cmd="alias julia=/opt/Julia-1.1.0/bin/julia"
 eval $julia_cmd
 
 ## warmup
