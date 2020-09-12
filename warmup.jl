@@ -19,13 +19,13 @@ using CSV
 ## if a customized version of Ipopt with MA27 is already installed, then directly "using Ipopt";
 ## otherwise run '''Pkg.add("Ipopt")''', where default linear solver MUMPS will be used,
 ## and perforamnce may be comproised
-using Ipopt
 # ENV["JULIA_IPOPT_LIBRARY_PATH"] = "/Users/kaizhaosun/coinOR/Ipopt/build/lib"
 # ENV["JULIA_IPOPT_EXECUTABLE_PATH"] =  "/Users/kaizhaosun/coinOR/Ipopt/build/bin"
 # for MPC VM
-ENV["JULIA_IPOPT_LIBRARY_PATH"] = "/home/mpc-linux-01/Ipopt/build/lib"
-ENV["JULIA_IPOPT_EXECUTABLE_PATH"] =  "/home/mpc-linux-01/Ipopt/build/bin"
-Pkg.build("Ipopt")
+# ENV["JULIA_IPOPT_LIBRARY_PATH"] = "/home/mpc-linux-01/Ipopt/build/lib"
+# ENV["JULIA_IPOPT_EXECUTABLE_PATH"] =  "/home/mpc-linux-01/Ipopt/build/bin"
+# Pkg.build("Ipopt")
+using Ipopt
 ## test IPOPT
 println("Test IPOPT in manager process...")
 
