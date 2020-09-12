@@ -44,7 +44,7 @@ A customized version of Ipopt with HSL linear solvers is assumed to be already i
 ### Network Problem
 In this part, one master and up to four workers threads will be used. So a total of five threads should be available. Execute
 ```julia
-include("NetorkProblem/Test_Network.jl")
+include("NetworkProblem/Test_Network.jl")
 ```
 This will generate `NetworkResult$(mmdd-HHMM).csv`. This script takes around 1 hr.
 ### Parallel Minimization over Compact Manifold
