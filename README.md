@@ -21,11 +21,10 @@ All Julia pacakges can be installed by running the script `warmup.jl` (run `Pkg.
 The results obtained by the aurthor can be found in the folder `Result_KS`. To reproduce results, clone this repository, and make sure a version of Julia is properly installed on the testing environment (Julia 1.1 is used by the author and other versions of Julia haven't been tested).
 
 ### For Technical Editor (NEW)
-Since Julia and all dependencies are already set up on the testing environment,
-the technical editor should not worry about the Ipopt issues mentioned above.
-The easiest way to reproduce all results is to simply execute the bash script file `sh test.sh`.
+Since Julia and all dependencies are already set up on the testing environment, the technical editor should not worry about the Ipopt issues mentioned above.
+The easiest way to reproduce all results is to simply execute the bash script file `sh test.sh` inside the folder `TwoLevelAlgo` on the VM.
 
-Alternatively, the technical editor can change current directory to the folder of this project, activate a Julia session, and execute the following lines of codes.
+Alternatively, the technical editor can change current directory to the folder of this project, activate a Julia session by typing `julia`, and execute the following lines of codes, which are essentially the content in the script `test.sh`.
 
 ### Install Required Packages
 Execute
