@@ -18,7 +18,7 @@ The results from `Result_KS` are generated on a 2018 MacBook Pro
 All Julia pacakges can be installed by running the script `warmup.jl` (run `Pkg.add("Ipopt")` if Ipopt is not available).
 
 ## Reproduce Results
-The results obtained by the aurthor can be found in the folder `Result_KS`. To reproduce results, clone this repository, and make sure a version of Julia is properly installed on the testing environment (Julia 1.1 is used by the author and other versions of Julia haven't been tested).
+<!-- The results obtained by the aurthor can be found in the folder `Result_KS`. To reproduce results, clone this repository, and make sure a version of Julia is properly installed on the testing environment (Julia 1.1 is used by the author and other versions of Julia haven't been tested). -->
 
 ### For Technical Editor (NEW)
 Since Julia and all dependencies are already set up on the testing environment, the technical editor should not worry about the Ipopt issues mentioned above.
@@ -27,6 +27,11 @@ The easiest way to reproduce all results is to simply execute the bash script fi
 sh test.sh
 ```
 inside the folder `TwoLevelAlgo` on the VM. Alternatively, the technical editor can change current directory to the folder `TwoLevelAlgo`, activate a Julia session by typing `julia`, and execute the following lines of codes, which are essentially the content in the script `test.sh`.
+
+The result obtained by the authors on the VM can be found in `~/TwoLevelAlgo/Result_VM_0912`. Here are some additional observations for the technical reviewer:
+1. While running the bash script, Ipopt will report some warning messages such as restoration failure or max number of iteration reached. This is not a bug in the code, and is reported when solving the ADMM-g subproblem, where large penalty is used. In addition, PDD is a randomized algorithm, so the number of iterations for may differ from the manuscript (but not by too much).
+2. For the largest manifold problem (np=300), when solved by centralized Ipopt, the solution on the VM is different from the solution I obtained on a MacBook Pro. In VM, Ipopt terminates faster but with a much worse solution (actually Ipopt had some problem in step computation, and returns a almost feasible problem through restoration phase). While on the MacBook Pro, Ipopt terminates successfully with results reported in Table 4 of the manuscript. I am not totally sure about this difference since the same initial point is provided, possibly because of machine difference, or version difference in the Ipopt/Julia wrapper (I installed a new customized Ipopt with HSL solver, which is called by Julia in our code; this is different from the default Ipopt installed by Julia’s package management system).
+3. While plotting the two figures for the robust PCA problem, there are some warning related to the matplotlib python library on the VM. I didn’t observe this warning messages on the MacBook Pro. It looks like the only consequence is that the labels of the x- and y-axis in the figure are not displayed completely, while the actual curves in the figures should be consistent.
 
 ### Install Required Packages
 Execute
